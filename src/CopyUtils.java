@@ -1,27 +1,39 @@
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import sun.misc.Unsafe;
 
-@SuppressWarnings("restriction")
 public class CopyUtils {
-    private static final Unsafe unsafe;
-
-    static {
-        try {
-            Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);
-            unsafe = (Unsafe) field.get(null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public static <T> T deepCopy(T toClone) {
         try {
             Class<?> clazz = toClone.getClass();
-            Object copy = unsafe.allocateInstance(clazz);
+            Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+            Constructor<?> selectedConstructor = null;
+            for (Constructor<?> constructor : constructors) {
+                if (constructor.getParameterCount() == 0) {
+                    selectedConstructor = constructor;
+                    break;
+                }
+            }
+            if (selectedConstructor == null) {
+                // If no constructor with 0 parameters is found, use the first constructor found
+                selectedConstructor = constructors[0];
+            }
+            selectedConstructor.setAccessible(true); // Ensure we can access the constructor
+
+            Object copy;
+            if (selectedConstructor.getParameterCount() == 0) {
+                copy = selectedConstructor.newInstance(); // Use the no-args constructor if available
+            } else {
+                // Prepare constructor arguments for constructors with parameters
+                Object[] constructorArgs = new Object[selectedConstructor.getParameterCount()];
+                for (int i = 0; i < constructorArgs.length; i++) {
+                    constructorArgs[i] = getDefaultParameter(selectedConstructor.getParameterTypes()[i]);
+                }
+                copy = selectedConstructor.newInstance(constructorArgs); // Use the constructor with arguments
+            }
 
             Field[] fields = clazz.getDeclaredFields();
             List<Object> fieldValues = new ArrayList<>();
@@ -71,4 +83,16 @@ public class CopyUtils {
         }
     }
 
+    // Helper method to get default values for constructor arguments
+    private static Object getDefaultParameter(Class<?> type) {
+        if (type.isPrimitive()) {
+            if (type == boolean.class) return false;
+            if (type == char.class) return '\u0000';
+            if (type == byte.class || type == short.class || type == int.class) return 0;
+            if (type == long.class) return 0L;
+            if (type == float.class) return 0.0f;
+            if (type == double.class) return 0.0;
+        }
+        return null; // For non-primitive types, use null as default
+    }
 }
