@@ -16,6 +16,7 @@ public class Main {
         ivan.setName("Ivan");
         ivan.getFavoriteBooks().add("MuMu");
         ivan.getBestFriend().setName("Ponteleymon");
+        ivan.setAge(18);
         peter.getFavoriteBooks().remove("Murzilka");
 
 
