@@ -3,6 +3,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class CopyUtils {
 
@@ -44,6 +45,8 @@ public class CopyUtils {
                     fieldValue = deepCopy(fieldValue); // Recursive call for nested class
                 } else if (fieldValue instanceof Collection<?>) {
                     fieldValue = deepCopyCollection((Collection<?>) fieldValue); // Recursive call for collections
+                }else if (fieldValue instanceof Map<?, ?>) {
+                    fieldValue = deepCopyMap((Map<?, ?>) fieldValue); // Recursive call for maps
                 }
                 fieldValues.add(fieldValue);
             }
@@ -77,6 +80,31 @@ public class CopyUtils {
             }
 
             return newCollection;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+
+    @SuppressWarnings("unchecked")
+    private static <K, V, M extends Map<K, V>> M deepCopyMap(M map) {
+        try {
+            M newMap = (M) map.getClass().getDeclaredConstructor().newInstance(); // Create a new instance of the same map type
+
+            for (Map.Entry<K, V> entry : map.entrySet()) {
+                K key = entry.getKey();
+                V value = entry.getValue();
+                if (key != null && !key.getClass().isPrimitive() && !key.getClass().getName().startsWith("java")) {
+                    key = (K) deepCopy(key); // Recursive call for map keys
+                }
+                if (value != null && !value.getClass().isPrimitive() && !value.getClass().getName().startsWith("java")) {
+                    value = (V) deepCopy(value); // Recursive call for map values
+                }
+                newMap.put(key, value);
+            }
+
+            return newMap;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
