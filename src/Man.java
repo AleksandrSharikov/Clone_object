@@ -12,12 +12,7 @@ class Man {
         this.favoriteBooks = favoriteBooks;
         this.bestFriend = bestFriend;
     }
-    public Man(String name, int age, List<String> favoriteBooks) {
-        this.name = name;
-        this.age = age;
-        this.favoriteBooks = favoriteBooks;
-        this.bestFriend = null;
-    }
+
 
     public Man getBestFriend() {
         return bestFriend;

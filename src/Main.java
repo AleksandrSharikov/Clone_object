@@ -4,7 +4,7 @@ import java.util.List;
 public class Main {
     public static void main(String[] args) {
         Man peter = new Man("Peter", 25, new ArrayList<>(List.of("Murzilka", "Voynna i mir", "Bukvar"))
-                , new Man("Ignat", 45, null) );
+                , new Man("Ignat", 45, null, null) );
         Man ivan = CopyUtils.deepCopy(peter);
 
 
