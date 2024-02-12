@@ -8,6 +8,9 @@ import java.util.Map;
 public class CopyUtils {
 
     public static <T> T deepCopy(T toClone) {
+        if(toClone == null){
+            return null;
+        }
         try {
             Class<?> clazz = toClone.getClass();
             Constructor<?>[] constructors = clazz.getDeclaredConstructors();
